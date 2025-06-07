@@ -6,6 +6,17 @@ __pycache__/
 # C extensions
 *.so
 
+# Data Folder
+data/
+
+# Session Files
+*.session
+*.session-journal
+*.session-journal-lock
+*.session-lock
+*.session-lock-lock
+*.session-lock-lock-lock
+
 # Distribution / packaging
 .Python
 build/
