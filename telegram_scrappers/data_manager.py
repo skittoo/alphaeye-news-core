@@ -199,6 +199,39 @@ class MongoDataManager:
             self.logger.error(f"Error getting message count: {e}")
             return 0
     
+    async def get_latest_message_id(self, channel_name: str) -> Optional[int]:
+        """
+        Get the latest (highest) message ID for a specific channel.
+        
+        Args:
+            channel_name: Name of the channel to get latest message ID for
+            
+        Returns:
+            Latest message ID or None if no messages found
+        """
+        if self.collection is None:
+            self.logger.error("Not connected to MongoDB. Call connect() first.")
+            return None
+            
+        try:
+            # Find the message with the highest ID for this channel
+            latest_message = self.collection.find_one(
+                {"channel": channel_name},
+                sort=[("id", -1)]  # Sort by ID descending to get the latest
+            )
+            
+            if latest_message:
+                latest_id = latest_message.get('id')
+                self.logger.info(f"Latest message ID for channel '{channel_name}': {latest_id}")
+                return latest_id
+            else:
+                self.logger.info(f"No messages found for channel '{channel_name}'")
+                return None
+                
+        except Exception as e:
+            self.logger.error(f"Error getting latest message ID for channel '{channel_name}': {e}")
+            return None
+    
     async def close(self):
         """Close MongoDB connection."""
         if self.client:

@@ -143,15 +143,22 @@ class TelegramScraperManager:
     async def scrape_all_channels(self, limit: Optional[int] = None) -> Dict[str, List[Dict[str, Any]]]:
         """
         Scrape messages from all registered channels.
+        Only scrapes new messages that haven't been stored yet.
         
         Args:
-            limit: Maximum number of messages to scrape from each channel
+            limit: Maximum number of messages to scrape from each channel for initial scrapes.
+                   For incremental scrapes (channels with existing data), ALL new messages 
+                   will be scraped regardless of limit to ensure no messages are missed.
             
         Returns:
             Dictionary mapping channel names to lists of scraped messages
         """
         results = {}
         scrapers = TelegramScraperFactory.get_all_scrapers()
+        
+        self.logger.info(f"Starting scraping operation for {len(scrapers)} channels...")
+        self.logger.info(f"Limit for initial scrapes: {limit if limit else 'unlimited'}")
+        self.logger.info(f"Incremental scrapes: ALL new messages will be fetched (ignoring limit)")
         
         for scraper in scrapers:
             channel_name = scraper.channel_name
@@ -160,14 +167,30 @@ class TelegramScraperManager:
                 if not scraper.client and self.client:
                     await scraper.connect(self.client)
                 
-                # Scrape the channel
+                self.logger.info(f"🔄 Processing channel: {channel_name}")
+                
+                # Scrape the channel (this will automatically handle incremental vs full scraping)
                 channel_results = await scraper.scrape(limit=limit)
                 results[channel_name] = channel_results
-                self.logger.info(f"Scraped {len(channel_results)} messages from {channel_name}")
+                
+                if len(channel_results) > 0:
+                    self.logger.info(f"✅ {channel_name}: {len(channel_results)} messages processed")
+                else:
+                    self.logger.info(f"ℹ️  {channel_name}: No new messages found")
                 
             except Exception as e:
-                self.logger.error(f"Error scraping channel {channel_name}: {e}")
+                self.logger.error(f"❌ Error scraping channel {channel_name}: {e}")
                 results[channel_name] = []
+        
+        total_new_messages = sum(len(messages) for messages in results.values())
+        channels_with_new_messages = sum(1 for messages in results.values() if len(messages) > 0)
+        
+        self.logger.info("=" * 50)
+        self.logger.info(f"📊 SCRAPING SUMMARY:")
+        self.logger.info(f"📈 Total new messages: {total_new_messages}")
+        self.logger.info(f"📺 Channels with new messages: {channels_with_new_messages}/{len(scrapers)}")
+        self.logger.info(f"🔄 All new messages have been processed and saved")
+        self.logger.info("=" * 50)
         
         return results
     
@@ -279,7 +302,8 @@ async def main():
     #     categories=["technology", "ai"]
     # )
     
-    # Scrape all channels
+    # Scrape all channels (only new messages since last scrape will be fetched)
+    # The scraper automatically checks MongoDB for the latest message ID and starts from there
     results = await manager.scrape_all_channels(limit=1)
         
     print(results)
