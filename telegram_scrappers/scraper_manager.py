@@ -267,7 +267,7 @@ async def main():
     # Add channels with specific channel IDs
     await manager.add_channel(
         channel_name="AjaNews",
-        scraper_type="AjaNews_channel", 
+        scraper_type="basic_text_channel", 
         channel_id="@AjaNews",  # Use username instead of numeric ID
     )
     
