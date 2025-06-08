@@ -281,11 +281,7 @@ async def main():
     
     # Scrape all channels
     results = await manager.scrape_all_channels(limit=1)
-    
-    # Save results to JSON file
-    saved_file = manager.save_to_json(results)
-    print(f"Results saved to: {saved_file}")
-    
+        
     print(results)
     
     # Process the results

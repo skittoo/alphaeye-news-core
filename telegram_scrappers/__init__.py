@@ -10,6 +10,7 @@ __version__ = "0.1.0"
 from .base_scraper import BaseTelegramScraper
 from .scraper_factory import TelegramScraperFactory
 from .scraper_manager import TelegramScraperManager
+from .data_manager import MongoDataManager
 
 # Import channel-specific scrapers for easy access
 try:
@@ -21,5 +22,6 @@ __all__ = [
     'BaseTelegramScraper',
     'TelegramScraperFactory',
     'TelegramScraperManager',
+    'MongoDataManager',
     'BasicTextChannelScraper',
 ]
