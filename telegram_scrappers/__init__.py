@@ -13,7 +13,7 @@ from .scraper_manager import TelegramScraperManager
 
 # Import channel-specific scrapers for easy access
 try:
-    from .channels.AjaNews_channel import AjaNewsScraper
+    from .channels.basic_text_channel import BasicTextChannelScraper
 except ImportError:
     pass
 
@@ -21,5 +21,5 @@ __all__ = [
     'BaseTelegramScraper',
     'TelegramScraperFactory',
     'TelegramScraperManager',
-    'AjaNewsScraper',
+    'BasicTextChannelScraper',
 ]
